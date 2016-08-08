@@ -42,7 +42,7 @@ case class KeyValueServiceActor(serviceConfig: Config, globalConfig: Config) ext
   private def doGet(get: KvGet): Future[KvResponse] = {
     val backendValue = getBackendValueByKey(
       get.key.workflowId,
-      get.key.jobKey.scope,
+      get.key.jobKey.callFqn,
       get.key.jobKey.index,
       get.key.jobKey.attempt,
       get.key.key

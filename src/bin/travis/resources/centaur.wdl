@@ -1,3 +1,4 @@
+#        ./test_cromwell.sh -j${cromwell_jar} -c/cromwell_root/${conf} -r/cromwell_root -t ${secret}
 task centaur {
     String cromwell_branch
     File conf
@@ -12,7 +13,11 @@ task centaur {
         git clone https://github.com/broadinstitute/centaur.git
         cd centaur
         git checkout develop
-        ./test_cromwell.sh -j${cromwell_jar} -c/cromwell_root/${conf} -r/cromwell_root -t ${secret}
+        sbt "test-only * -- -n forkjoin"
+        sleep 20
+        ^C
+        curl -X GET --header "Accept: application/json" "http://localhost:8000/api/workflows/v1/query?status=Running&name=forkjoin"
+        grep '[a-z][0-9]\{3\}[a-z]\{2\}[0-9][a-z]-[0-9][a-z]\{3\}'
     >>>
 
     output {

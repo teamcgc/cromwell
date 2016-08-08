@@ -75,7 +75,7 @@ case class JesJobExecutionActor(override val jobDescriptor: BackendJobDescriptor
 
     for {
       _ <- launchExecutor
-      _ = serviceRegistryActor ! KvGet(ScopedKey(jobDescriptor.descriptor.id, jobDescriptor.key, JesOperationIdKey))
+      _ = serviceRegistryActor ! KvGet(KvScopedKey(jobDescriptor.descriptor.id, KvServiceJobKey(jobDescriptor.key.call.fullyQualifiedName, jobDescriptor.key.index, jobDescriptor.key.attempt), JesOperationIdKey))
       c <- completionPromise.future
     } yield c
   }

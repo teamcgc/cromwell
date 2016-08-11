@@ -4,6 +4,7 @@ import java.nio.file.Path
 
 import akka.actor.{ActorLogging, ActorRef, LoggingFSM, Props}
 import cromwell.backend.BackendJobDescriptor
+import cromwell.database.sql.MetaInfoId
 import cromwell.engine.workflow.lifecycle.execution.callcaching.EngineJobHashingActor._
 import cromwell.engine.workflow.lifecycle.execution.callcaching.FileHasherActor.JobFileHashRequests
 
@@ -28,6 +29,12 @@ case class EngineJobHashingActor(jobDescriptor: BackendJobDescriptor,
   when(GeneratingAllHashes) {
     case Event(hashResultMessage: HashResultMessage, _) => checkWhetherAllHashesAreKnownAndTransition(stateData.withNewKnownHashes(hashResultMessage.hashes))
     case Event(CacheResultMatchesForHashes(_, _), _) => stay // Don't care; we already know the hit/miss status. Ignore this message
+  }
+
+  whenUnhandled {
+    case Event(failure: CacheResultLookupFailure, _) =>
+      // Crash and let the supervisor deal with it.
+      throw new RuntimeException("Failure looking up call cache results", failure.reason)
   }
 
   private def initializeEJHA() = {
@@ -84,8 +91,10 @@ case class EngineJobHashingActor(jobDescriptor: BackendJobDescriptor,
     * Needs to convert a hash result into the set of CachedResults which are consistent with it
     */
   private def lookupRelevantCacheResults(hashResults: Iterable[HashResult]) = {
+    val hashes = CallCacheHashes(hashResults.toList)
+    context.actorOf(CallCacheReadActor.props(hashes))
+
     val newData = if (mode.writeToCache) stateData.withNewKnownHashes(hashResults) else stateData
-    self ! CacheResultMatchesForHashes(hashResults, Set.empty) // TODO: Probably want to convert this into a call to another actor which would respond back with the results.
     stay using newData
   }
 
@@ -109,7 +118,7 @@ object EngineJobHashingActor {
   case object GeneratingAllHashes extends EJHAState
 
   sealed trait EJHAResponse
-  case class CacheHit(cacheResultId: Int) extends EJHAResponse
+  case class CacheHit(cacheResultId: MetaInfoId) extends EJHAResponse
   case object CacheMiss
   case class CallCacheHashes(hashes: List[HashResult])
 }
@@ -122,7 +131,7 @@ object EngineJobHashingActor {
   * @param hashesKnown The set of all hashes calculated so far (including initial hashes)
   * @param hashesNeeded Not transient but oh-so-useful for everything else.
   */
-private[callcaching] case class EJHAData(possibleCacheResults: Set[Int],
+private[callcaching] case class EJHAData(possibleCacheResults: Set[MetaInfoId],
                                          cacheResultsIntersected: List[HashKey],
                                          hashesKnown: List[HashResult],
                                          hashesNeeded: Iterable[HashKey]) {

@@ -149,7 +149,7 @@ private[callcaching] case class EJHAData(possibleCacheResults: Set[MetaInfoId],
   // Queries
   def allHashesKnown = hashesNeeded.size == hashesKnown.size
   def allCacheResultsIntersected = cacheResultsIntersected.size == hashesNeeded.size
-  def cacheHit = if (allCacheResultsIntersected && possibleCacheResults.nonEmpty) Option(possibleCacheResults.head) else None
+  def cacheHit = if (allCacheResultsIntersected && possibleCacheResults.nonEmpty) possibleCacheResults.headOption else None
   def isDefinitelyCacheHit = cacheHit.isDefined
   def isDefinitelyCacheMiss = cacheResultsIntersected.nonEmpty && possibleCacheResults.isEmpty
   def isDefinitelyCacheHitOrMiss = isDefinitelyCacheHit || isDefinitelyCacheMiss

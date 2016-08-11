@@ -92,7 +92,7 @@ case class EngineJobHashingActor(jobDescriptor: BackendJobDescriptor,
     */
   private def lookupRelevantCacheResults(hashResults: Iterable[HashResult]) = {
     val hashes = CallCacheHashes(hashResults.toList)
-    context.actorOf(CallCacheReadActor.props(hashes))
+    context.actorOf(CallCacheReadActor.props(hashes), s"CallCacheReadActor-${jobDescriptor.descriptor.id}-${jobDescriptor.key.tag}")
 
     val newData = if (mode.writeToCache) stateData.withNewKnownHashes(hashResults) else stateData
     stay using newData

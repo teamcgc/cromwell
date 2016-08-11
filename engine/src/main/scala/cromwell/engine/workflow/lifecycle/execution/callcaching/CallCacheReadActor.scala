@@ -17,7 +17,7 @@ class CallCacheReadActor(callCacheHashes: CallCacheHashes) extends Actor with Ac
   {
     implicit val ec: ExecutionContext = context.dispatcher
 
-    val replyTo = sender()
+    val replyTo = context.parent
     val cache = new CallCache(CromwellDatabase.databaseInterface)
     cache.fetchMetaInfoIdsMatchingHashes(callCacheHashes) onComplete {
       case Success(s) => replyTo ! CacheResultMatchesForHashes(callCacheHashes.hashes, s)

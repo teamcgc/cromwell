@@ -63,3 +63,5 @@ JAR_GCS_PATH=gs://cloud-cromwell-dev/travis-centaur/${CROMWELL_JAR}
 gsutil cp target/scala-2.11/cromwell-*.jar "${JAR_GCS_PATH}"
 
 java -Dconfig.file=./jes.conf -jar target/scala-2.11/cromwell-*.jar run src/bin/travis/resources/centaur.wdl src/bin/travis/resources/centaur.inputs
+
+echo "To see the Centaur and Cromwell logs for this test, go to https://console.cloud.google.com/storage/browser/cloud-cromwell-dev/cromwell_execution/travis/centaur/WORKFLOW_ID/call-centaur/cromwell_root/logs/?project=broad-dsde-cromwell-dev"

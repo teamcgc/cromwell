@@ -12,7 +12,7 @@
                         tableName="CALL_CACHING_RESULT_METAINFO"/>
     </changeSet>
 
-    <changeSet id="call_caching" author="">
+    <changeSet id="call_caching" author="mcovarr">
         <addDefaultValue columnName="ALLOW_RESULT_REUSE"
                          defaultValueBoolean="true"
                          tableName="CALL_CACHING_RESULT_METAINFO"/>

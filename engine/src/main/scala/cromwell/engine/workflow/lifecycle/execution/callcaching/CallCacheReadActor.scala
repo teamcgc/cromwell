@@ -26,6 +26,6 @@ class CallCacheReadActor(callCacheHashes: CallCacheHashes) extends Actor with Ac
   }
 
   override def receive: Receive = {
-    case any => log.error("Unexpected message to CallCacheWriteActor: " + any)
+    case any => log.error("Unexpected message to CallCacheReadActor: " + any)
   }
 }
